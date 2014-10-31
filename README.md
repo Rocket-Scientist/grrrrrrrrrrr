@@ -1,6 +1,3 @@
-grrrrrrrrrrr
-============
-
 #include <stdio.h>          /* The libraries needed for the code below.*/
 #include <string.h>
 #include <grx20.h>
@@ -23,12 +20,12 @@ float drag;
 float acceleration;
 float velocity;
  
-const int   MAXROW = 250, MAXCOL = 8, COLt = 1, COLRo = 2, COLdrag = 3, COLa = 4, COLv = 5, COLh = 6, COLg = 7, COLm = 8;	
+const int   MAXROW = 500, MAXCOL = 8, COLt = 1, COLRo = 2, COLdrag = 3, COLa = 4, COLv = 5, COLh = 6, COLg = 7, COLm = 8;	
 
 
 typedef struct	RSIMStructure {     /* Defining the data structure that is used throughout the program.*/               
     int	currentrow;                     /* The array contained has a fixed number of rows and columns, where the columns are for */
-    float table[250][8]; 
+    float table[500][8]; 
     float time;              /* specific variables.*/                  
  }  RSIMType;
 
@@ -120,11 +117,11 @@ void  DisplayDataTable(RSIMType datatable, int fromrow, int torow) {
           for (row=fromrow;  row<=torow;  row=row+1) {
 	        
 	           LineCount = LineCount+1;
-               if (LineCount==10) {
+               if (LineCount==11) {
                     printf("Press RETURN to continue ...\n"); 
                     fflush(stdin);
                     scanf("%c",&dummy);
-                    LineCount=0;}
+                    LineCount=1;}
                for (column=1;  column<=MAXCOL;  column=column+1) {
 		            printf("%9.2f\t\t", datatable.table[row][column]);     
 	           } 
@@ -154,9 +151,11 @@ RSIMType ClearDataTable(RSIMType datatable) {       /* This function clears the 
 
       
 void Graph_plotter() {
-    int xres, yres, ob, ib, i, exit_corss_size;
+    int xres, yres, ob, ib, i, exit_cross_size;
     char str[80];
     char temp[80];
+    char acc_display[30];
+    
     GrMouseEvent evt;
     ob = 40;
     ib = 10;                                    /* plotting graphs, axes and labels*/
@@ -182,11 +181,11 @@ void Graph_plotter() {
     DrawText1(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(4*ob), graph1xlabel, GR_ALIGN_LEFT, GR_ALIGN_TOP);
     /* GrContext *GrCurrentContext(void) or GetScreenContext()         */
     
-    exit_corss_size = 15;
-    GrLine(xres - exit_corss_size,0,xres,exit_corss_size,12);      /*Exit cross*/
-    GrLine(xres - exit_corss_size,exit_corss_size,xres,0,12);      /*Exit cross*/
+    exit_cross_size = 15;
+    GrLine(xres - exit_cross_size,0,xres,exit_cross_size,12);      /*Exit cross*/
+    GrLine(xres - exit_cross_size,exit_cross_size,xres,0,12);      /*Exit cross*/
     
-    i = 1;
+  /*  i = 1;
     while(i == 1){
 
         GrMouseGetEventT(GR_M_LEFT_DOWN,&evt,0L);
@@ -199,17 +198,16 @@ void Graph_plotter() {
             strcat(str," GrScreenY ");
             sprintf(temp, "%d", GrScreenY());
             strcat(str,temp);
-            /*DrawText1(100,100,str,GR_ALIGN_CENTER, GR_ALIGN_CENTER);*/ /*not sure this line is necessary but you put it in and i don't want to cause trouble*/
             printf("\nx=%d, y=%d", evt.x, evt.y);
-            if (evt.x > (xres -exit_corss_size) && evt.y < exit_corss_size) {
+            if (evt.x > (xres -exit_cross_size) && evt.y < exit_cross_size) {
                       i = 2;
                       GrSetMode(GR_default_text);
                       }
-            /*sprintf (line,"%f",evt.x);
-            GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib+200,(yres/2)+(ob),line,15,8);*/
+            sprintf (acc_display, "Acceleration (m/s^2) = %f", evt.x);
+            GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib+200,(yres/2)+(ob), acc_display, 15, 8);
         }
         
-    }
+    } */
     
 }
 
@@ -247,22 +245,20 @@ int DrawText2(int x, int y, char * message, int xAlign, int yAlign) {           
 
 
 RSIMType AddData(RSIMType datatable, int number_of_boosters, int payload, int inert_mass) {
-     float thrust; 
+     float thrust;
      float total_time = 250;     /*changeable?*/     
      float drag_coefficient = 0.42;
      float area_which_experiences_drag = (PI / 4) * pow(5.4, 2);
-     float fuel_in_solid_rocket_boosters = 41000 * number_of_boosters;
-     float fuel_in_atlas_booster = 284089;
      float molar_mass = 0.02897;
      float dt = 1; /*let them choose this in proper one*/
-     float fuel_rate_of_solid_rocket_boosters = fuel_in_solid_rocket_boosters / (94 * dt);
-     float fuel_rate_of_atlas_booster = fuel_in_atlas_booster / (250 * dt);
+     float fuel_rate_of_solid_rocket_boosters = 40939 / 94;
+     float fuel_rate_of_atlas_booster = 284089 / 250;
      float air_temp = 280; /*made up*/
      velocity = 0;
      altitude = 10;  
-     mass = payload + (number_of_boosters * 46697) + inert_mass + fuel_in_solid_rocket_boosters + fuel_in_atlas_booster;
+     mass = payload + (number_of_boosters * 5740) + inert_mass + 40939 + 284089;
      gravity = 9.7984;
-     time = 0;
+     time = -1;
      
            /* Function takes data input and stores it in the data structure, row by row.*/
      if (datatable.currentrow >= (MAXROW)) {
@@ -288,13 +284,13 @@ RSIMType AddData(RSIMType datatable, int number_of_boosters, int payload, int in
       
       
 float timer(float dt){
-      time = time + dt;
+      time = (time + dt);
       return time;
       }   
            
 float calc_thrust(float thrust, int number_of_boosters, float gravity, float fuel_rate_of_solid_rocket_boosters, float fuel_rate_of_atlas_booster) {
       if (time <= 94) {
-           thrust = number_of_boosters * (fuel_rate_of_solid_rocket_boosters * 279.3 * gravity) + (fuel_rate_of_atlas_booster * 311.3 * gravity);}
+           thrust = (number_of_boosters * (fuel_rate_of_solid_rocket_boosters * 279.3 * gravity)) + (fuel_rate_of_atlas_booster * 311.3 * gravity);}
       else {
            thrust = fuel_rate_of_atlas_booster * 311.3 * gravity;}
       return thrust;
@@ -327,13 +323,13 @@ float calc_altitude(float dt) {
       }
 
 float calc_gravity() {
-      gravity = (gravitational_constant * mass_of_earth) / (pow(radius_of_earth + altitude,2));
+      gravity = (gravitational_constant * mass_of_earth) / (pow(radius_of_earth + altitude, 2));
       return gravity;
       }
 
 float calc_mass(float fuel_rate_of_solid_rocket_boosters, float fuel_rate_of_atlas_booster, float dt, int number_of_boosters) {
-      if (time == 115) { mass = mass - (number_of_boosters * 46697); }
-      if (time <= 94) {mass = mass - (fuel_rate_of_solid_rocket_boosters + fuel_rate_of_atlas_booster) * dt;}
+      if (time == 115) { mass = mass - (number_of_boosters * 5740); }
+      if (time <= 94) {mass = mass - ((fuel_rate_of_solid_rocket_boosters)  + fuel_rate_of_atlas_booster) * dt;}
       else mass = mass - fuel_rate_of_atlas_booster * dt;
       return mass;
       }
@@ -384,15 +380,12 @@ int NumberOfBoosters(int number_of_boosters) {
 int CentaurEngineType(int centaur_engine_type, int i, int inert_mass) {
       printf ("What type of centaur engine would you like to use:\n1. Single engine centaur\n2. Duel engine centaur\n");
       i = ValidateData();
-      if (i = 1) {
+      if (i == 1) {
             centaur_engine_type = 99200;
             inert_mass = 51203; }
-      else if (i = 2) {
+      else if (i == 2) {
             centaur_engine_type = 198400;
             inert_mass = 51418; }
       else { printf("\nInvalid entry, please try again\n"); }
       return centaur_engine_type, inert_mass;
       } 
-    
-
-
