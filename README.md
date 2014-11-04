@@ -145,8 +145,15 @@ float max_function(RSIMType datatable, int column){
 
 int scale(int start, int end, RSIMType datatable, int row, int column, int max){ 
       return start + (end - start) * datatable.table[row][column] / max;
-}
+      }
 
+float reverse_scale(int x, int start, int end, int max){
+    float fuck;
+    printf("start = %3.0d\nend = %3.0d\nmax = %3.0d\nevt.x = %3.0d\n",start,end,max,x);
+    fuck =((x - start)/(end-start))*max; 
+    printf("t = %.1f",fuck);   
+    return fuck; 
+    }
   
  void plot_graph(int column_x, int column_y, RSIMType datatable, int xs, int ys, int xe, int ye, int color){
      float xmax, ymax;     
@@ -167,7 +174,7 @@ int scale(int start, int end, RSIMType datatable, int row, int column, int max){
 }
       
 Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xborderless, float yborderless) {
-    int xres, yres, ob, ib, i, exit_cross_size;
+    int xres, yres, ob, ib, i, exit_cross_size, xmax, y1max, y2max;
     int x1a, y1a, x2a, y2a, x1b, y1b, x2b, y2b;
     char str[80];
     char temp[80];
@@ -199,6 +206,7 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
     y1b = yres-(3*ib);
     x2b = (2*(xres-ob))/3;
     y2b = ((yres+20)/2 + 2*ib);
+    printf("x1a = %d\n x2a = %d\n",x1a, x2a);
 
     GrLine(x1a, y1a, x1a, y2a, 0);
     GrLine(x1a, y1a, x2a, y1a, 0);
@@ -242,6 +250,8 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
     GrLine(xres - exit_cross_size,0,xres,exit_cross_size,12);      /*Exit cross*/
     GrLine(xres - exit_cross_size,exit_cross_size,xres,0,12);      /*Exit cross*/
     
+    printf("x1a = %3.0d\nx2a = %3.0d\n",x1a,x2a);
+    
     i = 1;
     while(i != -1){
 
@@ -256,9 +266,13 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
         
         if(evt.buttons == 1 && evt.dtime > 0.01){                                   /*this displays the values of the graph where you click in the parameters box*/
             if (evt.y > y2a && evt.y < y1a && evt.x < x2a && evt.x > x1a) {
-                      sprintf (acc_display, "Acceleration (m/s^2) = %03.0d", evt.y);
+                      xmax = max_function(datatable, 1);
+                      y1max = max_function(datatable, 4);
+                      y2max = max_function(datatable, 5);
+                      sprintf (acc_display, "Acceleration (m/s^2) = %03.0f", reverse_scale( evt.y, y1a, y2a, y1max));
                       sprintf (velocity_display, "Velocity (m/s) = %03.0d", evt.y);
-                      sprintf (time_display, "Time = %03.0d", evt.x);     
+                      printf("x1a = %3.0d\nx2a = %3.0d\nxmax = %3.0d\nevt.x = %3.0d\n",x1a,x2a,xmax,evt.x);
+                      sprintf (time_display, "Time = %.1f", reverse_scale( evt.x, x1a, x2a, xmax));     
             }
             else {
                  sprintf (acc_display, "Acceleration (m/s^2) = N/A");
