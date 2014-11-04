@@ -2,7 +2,7 @@
 #include <string.h>
 #include <grx20.h>
 #include <math.h>
-
+#include <windows.h>
 
 const int pressure_at_sea_level = 101325;
 const int radius_of_earth = 6371000;
@@ -175,9 +175,8 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
     char str[80];
     char temp[80];
     char displaytitle[34], acc_display[40], time_display[40], velocity_display[40], Mass_display[40], Altitude_display[40];
-    
     GrMouseEvent evt;
-    GrSetMode(GR_width_height_graphics,1024,600);
+    GrSetMode(GR_width_height_graphics,GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN)); /* makes the graphics window full size*/
     GrClearScreen(15);    /* Makes the graphics window white*/
     ob = 40;
     ib = 10;   
@@ -246,12 +245,11 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
     GrLine(xres - exit_cross_size,0,xres,exit_cross_size,12);      /*Exit cross*/
     GrLine(xres - exit_cross_size,exit_cross_size,xres,0,12);      /*Exit cross*/
     
-    printf("x1a = %3.0d\nx2a = %3.0d\n",x1a,x2a);
+    
     
     i = 1;
     while(i != -1){
 
-        GrMouseEvent evt;
         GrMouseGetEventT(GR_M_LEFT_DOWN,&evt,0L);
         
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(ob), acc_display, 15, 8);
@@ -278,7 +276,7 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
                       xb_max = max_function(datatable, 6);
                       yb_max = max_function(datatable, 8);     
                       sprintf (Mass_display, "Rocket Mass (kg) = %03.0d", reverse_scale( evt.y, y1b, y2b, yb_max));
-                      sprintf (Altitude_display, "Altitude (m) = %03.0d", reverse_scale( evt.x, x1b, x2b, xb_max));
+                      sprintf (Altitude_display, "Altitude (m) = %06.0d", reverse_scale( evt.x, x1b, x2b, xb_max));
             }
             else {
                  sprintf (Mass_display, "Rocket Mass (kg) =  N/A   ");
