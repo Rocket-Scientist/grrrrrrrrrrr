@@ -151,6 +151,7 @@ float reverse_scale(int x, int start, int end, int max){
     float fuck;
     printf("start = %3.0d\nend = %3.0d\nmax = %3.0d\nevt.x = %3.0d\n",start,end,max,x);
     fuck =((x - start)/(end-start))*max; 
+    /*fuck =((x - start)*max)/(end-start); */
     printf("t = %.1f",fuck);   
     return fuck; 
     }
