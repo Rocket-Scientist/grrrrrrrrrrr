@@ -169,7 +169,7 @@ int reverse_scale(int x, int start, int end, int max){
      }             
 }
       
-Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xborderless, float yborderless) {
+Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int variable_xa, int variable_xb, int variable_y1a, int variable_y2a, int variable_yb){
     int xres, yres, ob, ib, i, exit_cross_size, xa_max, y1a_max, y2a_max, xb_max, yb_max;
     int x1a, y1a, x2a, y2a, x1b, y1b, x2b, y2b;
     char str[80];
@@ -182,13 +182,11 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
     ib = 10;   
     xres=GrScreenX();
     yres=GrScreenY();
-    xborderless = (xres - (ob/2));
-    yborderless = (yres/2)+(ob/2)-(2*(ib));                                 /* plotting graphs, axes and labels*/
-
+    
     sprintf (displaytitle, "Atlas V 400 Rocket Simulation Data");
     sprintf (acc_display, "Acceleration (m/s^2)");
-    sprintf (velocity_display, "Velocity (m/s)");
-    sprintf (time_display, "Time");
+    sprintf (velocity_display, "Velocity (m/s)");    /*Graph labels*/ 
+    sprintf (time_display, "time (s)");
     sprintf (Mass_display, "Rocket Mass (kg)");
     sprintf (Altitude_display, "Altitude (m)");
     
@@ -215,31 +213,11 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
     DrawText2(ib, yres-(yres/4), Mass_display, GR_ALIGN_CENTER, GR_ALIGN_CENTER, GrBlack());
     DrawText1(xres/3, yres-2*ib, Altitude_display, GR_ALIGN_CENTER, GR_ALIGN_TOP, GrBlack());
     
-    /*tic marks*/
-    /*for(i=(x2a-x1a)/4; i<(x2a-1); i=i+(x2a-x1a)/4){
-       GrLine(x1a+i, y1a, x1a+i, y1a+10, 0);
-       }
-    
-    for(i=(y2a-y1a)/4; i<(y2a-1); i=i+(y2a-y1a)/4){
-       GrLine(x1a, y1a + i, x1a-10, y1a + i, 0);
-       GrLine(x2a, y1a + i, x2a+10, y1a + i, 0);
-       }
-    
-    for(i=(x2b-x1b)/4; i<(x2b-1); i=i+(x2b-x1b)/4){
-       GrLine(x1b+i, y1b, x1b+i, (y1b + 10), 0);
-       DrawText1(x1b+i, y1b+10, tic_label, GR_ALIGN_CENTER, GR_ALIGN_TOP);
-       }
-     
-    for(i=(y2b-y1b)/4; i<(y2b-1); i=i+(y2b-y1b)/4){
-       GrLine(x1b, y1b+i, x1b-10, y1b + i, 0);
-       }*/
-    
     GrFilledBox(((2*(xres-ob))/3)+(ob/2),(yres/2)+(ob/2)+ib,xres-(ob/2),yres-(ob/2),8);
     
-    
-    plot_graph(1, 5, datatable, x1a, y1a, x2a, y2a, 1); /* function to plot velocity against time on the top graph*/
-    plot_graph(1, 4, datatable, x1a, y1a, x2a, y2a, 4); /* function to plot accleration against time on the top graph*/
-    plot_graph(6, 8, datatable, x1b, y1b, x2b, y2b, 2); /* function to plot altitude against time on the top graph*/
+    plot_graph(variable_xa, variable_y1a, datatable, x1a, y1a, x2a, y2a, 4); /* function to plot accleration against time on the top graph*/
+    plot_graph(variable_xa, variable_y2a, datatable, x1a, y1a, x2a, y2a, 1); /* function to plot velocity against time on the top graph*/
+    plot_graph(variable_xb, variable_yb, datatable, x1b, y1b, x2b, y2b, 2); /* function to plot altitude against time on the top graph*/
    
     exit_cross_size = 15;
     GrLine(xres - exit_cross_size,0,xres,exit_cross_size,12);      /*Exit cross*/
@@ -252,17 +230,17 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
 
         GrMouseGetEventT(GR_M_LEFT_DOWN,&evt,0L);
         
-        GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(ob), acc_display, 15, 8);
-        GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(2*ob), velocity_display, 15, 8);
+        GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(ob), acc_display, 4, 8);
+        GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(2*ob), velocity_display, 1, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(3*ob), time_display, 15, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(4*ob), Mass_display, 15, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(5*ob), Altitude_display, 15, 8);
         
         if(evt.buttons == 1 && evt.dtime > 0.01){                                   /*this displays the values of the graph where you click in the parameters box*/
             if (evt.y > y2a && evt.y < y1a && evt.x < x2a && evt.x > x1a) {
-                      xa_max = max_function(datatable, 1);
-                      y1a_max = max_function(datatable, 4);
-                      y2a_max = max_function(datatable, 5);
+                      xa_max = max_function(datatable, variable_xa);
+                      y1a_max = max_function(datatable, variable_y1a);
+                      y2a_max = max_function(datatable, variable_y2a);
                       sprintf (acc_display, "Acceleration (m/s^2) = %03.0d", reverse_scale( evt.y, y1a, y2a, y1a_max));
                       sprintf (velocity_display, "Velocity (m/s) = %04.0d", reverse_scale( evt.y, y1a, y2a, y2a_max));
                       sprintf (time_display, "Time = %03.0d", reverse_scale( evt.x, x1a, x2a, xa_max));     
@@ -273,8 +251,8 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
                  sprintf (time_display, "Time = N/A");
                  }
             if (evt.y > y2b && evt.y < y1b && evt.x < x2b && evt.x > x1b) {
-                      xb_max = max_function(datatable, 6);
-                      yb_max = max_function(datatable, 8);     
+                      xb_max = max_function(datatable, variable_xb);
+                      yb_max = max_function(datatable, variable_yb);     
                       sprintf (Mass_display, "Rocket Mass (kg) = %03.0d", reverse_scale( evt.y, y1b, y2b, yb_max));
                       sprintf (Altitude_display, "Altitude (m) = %06.0d", reverse_scale( evt.x, x1b, x2b, xb_max));
             }
@@ -507,8 +485,6 @@ int main() {                                                            /* Main 
     RSIMType datatable;
     int choice;
     int i;  
-    int xborderless;
-    int yborderless;  
     int column_x;
     int column_y;
     int payload = 4003;                                                 /*medium payload is the default*/
@@ -531,7 +507,7 @@ int main() {                                                            /* Main 
                 case 2:  DisplayDataTable(datatable, 0, MAXROW); break;                                               /* When a function like this is called - the data structure is*/
                 case 3:  datatable = ClearDataTable(datatable); break;
                 case 4:  ChangeParameters(&payload, &number_of_boosters, &inert_mass, centaur_engine_type, i, &start_temp, &drag_coefficient, &thrust_percentage, &detach_SRB_time, &detach_atlas_booster_time); break;                             /* The break stops the while loop from running through each option*/                                                             
-                case 5:  Graph_plotter(column_x, column_y, datatable,  max, xborderless, yborderless); break;
+                case 5:  Graph_plotter(column_x, column_y, datatable, max, 1, 6, 4, 5, 8); break;
                 case 6:  Export_to_excel(datatable, &detach_atlas_booster_time); break;
                 case 7:  choice = 0; break;                               /* once a case has been selected.*/   
                 default: printf("\nInvalid entry, please try again\n"); } 
