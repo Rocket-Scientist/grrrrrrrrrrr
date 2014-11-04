@@ -147,13 +147,8 @@ int scale(int start, int end, RSIMType datatable, int row, int column, int max){
       return start + (end - start) * datatable.table[row][column] / max;
       }
 
-float reverse_scale(int x, int start, int end, int max){
-    float fuck;
-    printf("start = %3.0d\nend = %3.0d\nmax = %3.0d\nevt.x = %3.0d\n",start,end,max,x);
-    fuck =((x - start)/(end-start))*max; 
-    /*fuck =((x - start)*max)/(end-start); */
-    printf("t = %.1f",fuck);   
-    return fuck; 
+int reverse_scale(int x, int start, int end, int max){
+    return ((x - start)*max)/(end-start);    
     }
   
  void plot_graph(int column_x, int column_y, RSIMType datatable, int xs, int ys, int xe, int ye, int color){
@@ -175,7 +170,7 @@ float reverse_scale(int x, int start, int end, int max){
 }
       
 Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xborderless, float yborderless) {
-    int xres, yres, ob, ib, i, exit_cross_size, xmax, y1max, y2max;
+    int xres, yres, ob, ib, i, exit_cross_size, xa_max, y1a_max, y2a_max, xb_max, yb_max;
     int x1a, y1a, x2a, y2a, x1b, y1b, x2b, y2b;
     char str[80];
     char temp[80];
@@ -267,26 +262,27 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, float xb
         
         if(evt.buttons == 1 && evt.dtime > 0.01){                                   /*this displays the values of the graph where you click in the parameters box*/
             if (evt.y > y2a && evt.y < y1a && evt.x < x2a && evt.x > x1a) {
-                      xmax = max_function(datatable, 1);
-                      y1max = max_function(datatable, 4);
-                      y2max = max_function(datatable, 5);
-                      sprintf (acc_display, "Acceleration (m/s^2) = %03.0f", reverse_scale( evt.y, y1a, y2a, y1max));
-                      sprintf (velocity_display, "Velocity (m/s) = %03.0d", evt.y);
-                      printf("x1a = %3.0d\nx2a = %3.0d\nxmax = %3.0d\nevt.x = %3.0d\n",x1a,x2a,xmax,evt.x);
-                      sprintf (time_display, "Time = %.1f", reverse_scale( evt.x, x1a, x2a, xmax));     
+                      xa_max = max_function(datatable, 1);
+                      y1a_max = max_function(datatable, 4);
+                      y2a_max = max_function(datatable, 5);
+                      sprintf (acc_display, "Acceleration (m/s^2) = %03.0d", reverse_scale( evt.y, y1a, y2a, y1a_max));
+                      sprintf (velocity_display, "Velocity (m/s) = %04.0d", reverse_scale( evt.y, y1a, y2a, y2a_max));
+                      sprintf (time_display, "Time = %03.0d", reverse_scale( evt.x, x1a, x2a, xa_max));     
             }
             else {
                  sprintf (acc_display, "Acceleration (m/s^2) = N/A");
-                 sprintf (velocity_display, "Velocity (m/s) = N/A");
+                 sprintf (velocity_display, "Velocity (m/s) =  N/A");
                  sprintf (time_display, "Time = N/A");
                  }
-            if (evt.y > y2b && evt.y < y1b && evt.x < x2b && evt.x > x1b) {      
-                      sprintf (Mass_display, "Rocket Mass (kg) = %03.0d", evt.y);
-                      sprintf (Altitude_display, "Altitude (m) = %03.0d", evt.x);
+            if (evt.y > y2b && evt.y < y1b && evt.x < x2b && evt.x > x1b) {
+                      xb_max = max_function(datatable, 6);
+                      yb_max = max_function(datatable, 8);     
+                      sprintf (Mass_display, "Rocket Mass (kg) = %03.0d", reverse_scale( evt.y, y1b, y2b, yb_max));
+                      sprintf (Altitude_display, "Altitude (m) = %03.0d", reverse_scale( evt.x, x1b, x2b, xb_max));
             }
             else {
-                 sprintf (Mass_display, "Rocket Mass (kg) = N/A");
-                 sprintf (Altitude_display, "Altitude (m) = N/A");
+                 sprintf (Mass_display, "Rocket Mass (kg) =  N/A   ");
+                 sprintf (Altitude_display, "Altitude (m) =  N/A   ");
                  }
             if (evt.x > (xres -exit_cross_size) && evt.y < exit_cross_size) {       /*this is to exit the while loop when the cross is clicked*/
                i = -1;
