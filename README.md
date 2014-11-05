@@ -41,8 +41,9 @@ char * displaytitle = "Atlas V 400 Rocket Simulation Data", * graph1yalabel = "A
 
 int Menu() {                                            /* Function that displays the list of options to the user.*/
     int option1;
-    printf("\n\nThis is a program to simulate a rocket launch, A set of default simulation data is ready to view.\n\n");
-    printf("1.\tDisplay experimental and calculated data.\n");
+    system("cls");
+    printf("\nThis is a program to simulate a rocket launch, A set of default simulation data is ready to view.\n\n");
+    printf("1.\tDisplay experimental and calculated data\n");
     printf("2.\tChange parameters\n");
     printf("3.\tPlot graphs\n");
     printf("4.\tSave data to Excel\n");
@@ -237,26 +238,26 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
 
         GrMouseGetEventT(GR_M_LEFT_DOWN,&evt,0L);
         
-        GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(ob), acc_display, 4, 8);
+        GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(ob), acc_display, 4, 8);            /*prints the paramenters from the graph in the 'parameter box' and displays the values of the point at which the user clicks*/
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(2*ob), velocity_display, 1, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(3*ob), time_display, 15, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(4*ob), Mass_display, 15, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(5*ob), Altitude_display, 15, 8);
         
         if(evt.buttons == 1 && evt.dtime > 0.01){                                   /*this displays the values of the graph where you click in the parameters box*/
-            if (evt.y > y2a && evt.y < y1a && evt.x < x2a && evt.x > x1a) {
+            if (evt.y > y2a && evt.y < y1a && evt.x < x2a && evt.x > x1a) {         /*the if statements determine whether the user is clicking on the graph or not*/
                       xa_max = max_function(datatable, variable_xa);
                       y1a_max = max_function(datatable, variable_y1a);
                       y2a_max = max_function(datatable, variable_y2a);
-                      sprintf (acc_display, "Acceleration (m/s^2) = %03.0d", reverse_scale( evt.y, y1a, y2a, y1a_max));
+                      sprintf (acc_display, "Acceleration (m/s^2) = %03.1d", reverse_scale( evt.y, y1a, y2a, y1a_max));       /*sprintf used to change the values printed in the parameter box in the graphics window*/
                       sprintf (velocity_display, "Velocity (m/s) = %04.0d", reverse_scale( evt.y, y1a, y2a, y2a_max));
                       sprintf (time_display, "Time = %03.0d", reverse_scale( evt.x, x1a, x2a, xa_max));
                       sprintf (Drag_display, "Drag (N)");
                       sprintf (Gravity_display, "Gravity (N)");
                       sprintf (Density_display, "Air Density (kg/M^3)");
             }
-            else {
-                 sprintf (acc_display, "Acceleration (m/s^2) = N/A");
+            else {                                                                  /*else statements cause N/A to be printed in the parameter box if the user clicks outside the graphs*/
+                 sprintf (acc_display, "Acceleration (m/s^2) = N/A");        
                  sprintf (velocity_display, "Velocity (m/s) =  N/A");
                  sprintf (time_display, "Time = N/A");
                  sprintf (Drag_display, "Drag (N) = N/A");
@@ -301,7 +302,7 @@ float calc_thrust(float *thrust, int *number_of_boosters, float gravity, float f
 }
 
 float calc_density(int *start_temp, float molar_mass) {
-      float pressure = pressure_at_sea_level * exp((-1 * molar_mass * gravity * altitude) / (gas_constant * /**start_temp*/280));
+      float pressure = pressure_at_sea_level * exp((-1 * molar_mass * gravity * altitude) / (gas_constant * *start_temp));
       density = (pressure * molar_mass)/(gas_constant * *start_temp);
       return density;
       }
@@ -339,10 +340,7 @@ float calc_mass(float fuel_rate_of_solid_rocket_boosters, float fuel_rate_of_atl
       return mass;
 }
 
-int DecideDragCofficient(float *drag_coefficient) {
-      printf ("What drag coefficient would you like to use:\n");
-      *drag_coefficient = ValidateData();
-}
+
 
 
 
@@ -353,7 +351,7 @@ RSIMType AddData(RSIMType datatable, int *number_of_boosters, int *payload, int 
      total_time = *detach_atlas_booster_time; 
      area_which_experiences_drag = (PI / 4) * pow(5.4, 2);
      molar_mass = 0.02897;
-     dt = 1; /*let them choose this in proper one*/
+     dt = 1;
      fuel_rate_of_solid_rocket_boosters = (1688400 * *thrust_percentage) / (9.81 * 279.3);
      fuel_rate_of_atlas_booster = (3827000 * *thrust_percentage) / (9.81 * 311.3);
      SRB_burn_time = 40939 / fuel_rate_of_solid_rocket_boosters;
@@ -369,8 +367,6 @@ RSIMType AddData(RSIMType datatable, int *number_of_boosters, int *payload, int 
            /* Function takes data input and stores it in the data structure, row by row.*/
      if (datatable.currentrow >= (MAXROW)) {
     	   printf("The array of data is full"); }
-     /*else if (time = total_time) {
-           printf("The array of data is full"); } /* Displayed if array is full.*/
      else {
            while (time < total_time) { 
                     datatable.table[datatable.currentrow][COLt] = timer(dt);  
@@ -418,7 +414,9 @@ float ChangeParameters(int *payload, int *number_of_boosters, int *inert_mass, i
     
 
 int MassOfPayload(int *payload, int i) {
-      printf ("Would you like to have:\n1. Short pay load\n2. Medium pay load\n3. Long pay load\n");
+      printf ("\nPlease select the payload which you would like to use:\n\n");
+      printf("1. Short pay load\n2. Medium pay load\n3. Long pay load\n");
+      printf("Please select: ");
       i = ValidateData();
       if (i == 1){ 
             *payload = 3524;}
@@ -432,23 +430,16 @@ int MassOfPayload(int *payload, int i) {
 int NumberOfBoosters(int *number_of_boosters) {
       *number_of_boosters = -1;
       while (*number_of_boosters < 0 || *number_of_boosters > 5) {
-                 printf ("How many boosters would you like? (You can have 0-5): ");
+                 printf ("\nPlease enter the number of Solid ROcket Boosters you would like to use (You can have 0-5): ");
                  *number_of_boosters = ValidateData();
       }
 }
 
-
-
-
-
-/*int NumberOfBoosters(int *number_of_boosters) {
-      printf ("How many boosters would you like? (You can have 0-5): ");
-      *number_of_boosters = ValidateData();            
-}*/
-
 int CentaurEngineType(int *centaur_engine_type, int *inert_mass) {
       int i;
-      printf ("What type of centaur engine would you like to use:\n1. Single engine centaur\n2. Duel engine centaur\n");
+      printf ("\nPlease select the type of common centaur engine you would like to use:\n\n");
+      printf("1. Single engine centaur\n2. Duel engine centaur\n");
+      printf("Please select: ");
       i = ValidateData();
       if (i == 1) {
             *centaur_engine_type = 99200;
@@ -460,28 +451,32 @@ int CentaurEngineType(int *centaur_engine_type, int *inert_mass) {
       }
       
 int temperature(int *start_temp) {
-    printf ("What temperature would you like to launch the rocket at (in Kelvin):\n");
+    printf ("\nPlease enter the temperature you would like to launch the rocket at (in Kelvin): ");
     *start_temp = ValidateData();
     }
 
+int DecideDragCofficient(float *drag_coefficient) {
+      printf ("\nPlease enter the drag coefficient you would like to use: ");
+      *drag_coefficient = ValidateData();
+}
+
 int DecideThrustPercentage(float *thrust_percentage) {
-      printf ("What percentage of the thrust would you like to use (a higher percentage will use the fuel up quicker);\n");
+      printf ("\nPlease enter the percentage of the thrust you would like to use (a higher percentage will use the fuel up quicker): ");
       *thrust_percentage = ValidateData() / 100;
       printf ("the Solid Rocket Boosters with run out of fuel after %fseconds\nThe Atlas booster will run out of fuel after %fseconds", 40939 / (1688400 * *thrust_percentage) / (9.81 * 279.3), 284089 / ((3827000 * *thrust_percentage) / (9.81 * 311.3)));
       }
 
 int DetachSRBTime(int *detach_SRB_time) {
-    printf ("How long launch would you like the Solid ROcket Boosters to detach:\n");
+    printf ("\nPlease enter the time after launch you would like the Solid Rocket Boosters to detach: ");
     *detach_SRB_time = ValidateData();
 }
 
 int DetachABTime(int *detach_atlas_booster_time) {
-    printf ("How long launch would you like the Atlas Booster to detach, and therefore the simulation to end:\n");
+    printf ("\nPlease enter the time after launch you would like the the Atlas Booster to detach (This will be the time at the the simulation ends): ");
     *detach_atlas_booster_time = ValidateData();
 }
 
 int Export_to_excel(RSIMType datatable, int *detach_atlas_booster_time) {
-    
     char spreadsheet_location[1000], filename[50];
     int j;
     FILE *spreadsheet;
