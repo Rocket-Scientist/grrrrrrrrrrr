@@ -174,7 +174,7 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
     int x1a, y1a, x2a, y2a, x1b, y1b, x2b, y2b;
     char str[80];
     char temp[80];
-    char displaytitle[34], acc_display[40], time_display[40], velocity_display[40], Mass_display[40], Altitude_display[40];
+    char displaytitle[34], acc_display[40], time_display[40], velocity_display[40], Mass_display[40], Altitude_display[40], Drag_display[40], Gravity_display[40], Density_display[40];
     GrMouseEvent evt;
     GrSetMode(GR_width_height_graphics,GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN)); /* makes the graphics window full size*/
     GrClearScreen(15);    /* Makes the graphics window white*/
@@ -189,6 +189,9 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
     sprintf (time_display, "time (s)");
     sprintf (Mass_display, "Rocket Mass (kg)");
     sprintf (Altitude_display, "Altitude (m)");
+    sprintf (Drag_display, "Drag (N)");
+    sprintf (Gravity_display, "Gravity (N)");
+    sprintf (Density_display, "Air Density (kg/M^3)");
     
     x1a = ob/2;
     y1a = (yres/2)+(ob/2)-2*(ib);
@@ -199,7 +202,7 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
     y1b = yres-(3*ib);
     x2b = (2*(xres-ob))/3;
     y2b = ((yres+20)/2 + 2*ib);
-    printf("x1a = %d\n x2a = %d\n",x1a, x2a);
+    
 
     GrLine(x1a, y1a, x1a, y2a, 0);
     GrLine(x1a, y1a, x2a, y1a, 0);
@@ -243,12 +246,18 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
                       y2a_max = max_function(datatable, variable_y2a);
                       sprintf (acc_display, "Acceleration (m/s^2) = %03.0d", reverse_scale( evt.y, y1a, y2a, y1a_max));
                       sprintf (velocity_display, "Velocity (m/s) = %04.0d", reverse_scale( evt.y, y1a, y2a, y2a_max));
-                      sprintf (time_display, "Time = %03.0d", reverse_scale( evt.x, x1a, x2a, xa_max));     
+                      sprintf (time_display, "Time = %03.0d", reverse_scale( evt.x, x1a, x2a, xa_max));
+                      sprintf (Drag_display, "Drag (N)");
+                      sprintf (Gravity_display, "Gravity (N)");
+                      sprintf (Density_display, "Air Density (kg/M^3)");
             }
             else {
                  sprintf (acc_display, "Acceleration (m/s^2) = N/A");
                  sprintf (velocity_display, "Velocity (m/s) =  N/A");
                  sprintf (time_display, "Time = N/A");
+                 sprintf (Drag_display, "Drag (N) = N/A");
+                 sprintf (Gravity_display, "Gravity (N) = N/A");
+                 sprintf (Density_display, "Air Density (kg/M^3) = N/A");
                  }
             if (evt.y > y2b && evt.y < y1b && evt.x < x2b && evt.x > x1b) {
                       xb_max = max_function(datatable, variable_xb);
@@ -262,12 +271,11 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
                  }
             if (evt.x > (xres -exit_cross_size) && evt.y < exit_cross_size) {       /*this is to exit the while loop when the cross is clicked*/
                i = -1;
+               GrMouseUnInit();
                GrSetMode(GR_default_text);
             }       
-        }
-        
-    }
-    
+        } 
+    }  
 }  
 
 float timer(float dt){
