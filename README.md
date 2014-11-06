@@ -41,9 +41,8 @@ char * displaytitle = "Atlas V 400 Rocket Simulation Data", * graph1yalabel = "A
 
 int Menu() {                                            /* Function that displays the list of options to the user.*/
     int option1;
-    system("cls");
-    printf("\nThis is a program to simulate a rocket launch, A set of default simulation data is ready to view.\n\n");
-    printf("1.\tDisplay experimental and calculated data\n");
+    printf("\n\nThis is a program to simulate a rocket launch, A set of default simulation data is ready to view.\n\n");
+    printf("1.\tDisplay experimental and calculated data.\n");
     printf("2.\tChange parameters\n");
     printf("3.\tPlot graphs\n");
     printf("4.\tSave data to Excel\n");
@@ -53,13 +52,13 @@ int Menu() {                                            /* Function that display
     return option1; }                  /* The user's choice is returned to the main function.*/
 
 
-
 int ValidateData() {                                       /* This function validates the user's input, and displays an error message*/
     int selection;                                         /* if invalid.*/
     while((scanf("%d", &selection) != 1)) {                /* The function checks for a numerical input - scanf will return a '1' if so.*/
       fflush(stdin);                                       /* The buffer is flushed so that the return key isn't registered as an input.*/
       printf("\nInvalid entry, please try again.\n\nPlease select: "); }
     return selection; }
+
 
 void  DisplayDataTable(RSIMType datatable, int fromrow, int torow) {
       int row, column; 
@@ -74,7 +73,7 @@ void  DisplayDataTable(RSIMType datatable, int fromrow, int torow) {
           for (row=fromrow;  row<=torow;  row=row+1) {
 	        
 	           LineCount = LineCount+1;   /* Registers line count.*/
-               if (LineCount==11) {
+               if (LineCount==11) {       /* Every ten values is displayed, apart from in the first section, where time 0 is included.*/
                     printf("Press RETURN to continue ...\n"); 
                     fflush(stdin);
                     dummy = getchar();
@@ -88,65 +87,69 @@ void  DisplayDataTable(RSIMType datatable, int fromrow, int torow) {
 }
 
 
-RSIMType ClearDataTable(RSIMType datatable) {       /* This function clears the entire current set of data.*/
-     
-    int  row, column;     
-     
-         
-    for (row=0;  row<=MAXROW-1;  row=row+1) {      /* Otherwise returns to the menu.*/
+RSIMType ClearDataTable(RSIMType datatable) {      /* This function clears the entire current set of data.*/  
+    int  row, column;          
+    for (row=0;  row<=MAXROW-1;  row=row+1) {      /* Goes through each row and column and sets the values back to 0.*/
         for (column=1;  column<=MAXCOL;  column=column+1) {
             datatable.table[row][column] = 0;
         }
     }
-    datatable.currentrow = 0; 
-           /* Finally the current row's data is set to 0.*/
+    datatable.currentrow = 0; /* Finally the current row of data is set to 0.*/
+           
     return datatable;
 }
 
-int DrawText1(int x, int y, char * message, int xAlign, int yAlign, char color) {          /*horizontal axes, labels*/                                                
-    GrTextOption grt;                                                     
-    grt.txo_font = &GrDefaultFont;                                        
+
+int DrawText1(int x, int y, char * message, int xAlign, int yAlign, char color) { /* Function to draw text with the desired specification.*/                                                
+    GrTextOption grt;                                 /* Declares a text structure with a list of text options.*/
+    grt.txo_font = &GrDefaultFont;                    /* Contains font, colour, background colour, direction of text flow, alignment etc.*/
     grt.txo_fgcolor.v = color;
     grt.txo_bgcolor.v = GrNOCOLOR;
-    grt.txo_direct = GR_TEXT_RIGHT;
-    grt.txo_xalign = xAlign;
+    grt.txo_direct = GR_TEXT_RIGHT;                   /* This function is for horizontally drawn text (mainly axes labels) in the*/
+    grt.txo_xalign = xAlign;                          /* graphics window.*/
     grt.txo_yalign = yAlign;
     grt.txo_chrtype = GR_BYTE_TEXT;
-    GrDrawString( message,strlen( message ),x,y,&grt );
+    GrDrawString( message,strlen( message ),x,y,&grt );   /* Draws the string within the graphics window from point x, y.*/
 }
 
-int DrawText2(int x, int y, char * message, int xAlign, int yAlign, char color) {             /*vertical axes, labels*/                                             
+
+int DrawText2(int x, int y, char * message, int xAlign, int yAlign, char color) { /* Function to draw text with the desired specification.*/                                                       
     GrTextOption grt;                                                     
     grt.txo_font = &GrDefaultFont;                                        
     grt.txo_fgcolor.v = color;
     grt.txo_bgcolor.v = GrNOCOLOR;
-    grt.txo_direct = GR_TEXT_UP;
-    grt.txo_xalign = xAlign;
+    grt.txo_direct = GR_TEXT_UP;                      /* This function is for vertically drawn text (mainly axes labels) in the*/
+    grt.txo_xalign = xAlign;                          /* graphics window.*/
     grt.txo_yalign = yAlign;
     grt.txo_chrtype = GR_BYTE_TEXT;
     GrDrawString( message,strlen( message ),x,y,&grt );
 }     
 
 
-/* Function to find the maximum value for a variable*/
-float max_function(RSIMType datatable, int column){
+float max_function(RSIMType datatable, int column){  /* Function to find the maximum value for a variable*/
     float max;
     int row;
     max = datatable.table[0][column];
     for (row=0;  row<MAXROW;  row=row+1){ 
-        if( datatable.table[row][column] > max ) {
-            max = datatable.table[row][column];
-        }
+        if( datatable.table[row][column] > max ) { /* The function goes through all the data in the column and finds the maximum value*/
+            max = datatable.table[row][column];  /* This will later be used in the scaling and reverse scaling function to generate the*/
+        }                                        /* maximum co-ordinates for the graphs.*/
     }
     return max;   
 } 
+
       
-/* A scaling function where x is the x data point from the initial equations, xres is the bottom right x coordinate of the graph you wish
- to plot on and xmax is the maximum x value in the data set*/      
+/* The scaling function is used to convert the data values into a fitted area in the graphics window.  It uses the maximum and minimum*/
+/* values, along with the starting and finishing co-ordinates for the different areas containing the graphs.*/     
+
 
 int scale(int start, int end, RSIMType datatable, int row, int column, int max){ 
       return start + (end - start) * datatable.table[row][column] / max;
 }
+
+
+/* The reverse scaling function does what it says, reversing the previous scaling function.  This is used to revert back from pixels on*/
+/* screen into the values in the data table.  These data values can then be displayed in the window from its pixel number.*/
 
 
 int reverse_scale(int x, int start, int end, int max){
@@ -154,25 +157,26 @@ int reverse_scale(int x, int start, int end, int max){
     }
   
 
+/* The function plot_graph calls the scale function to convert the data values into the correct, corresponding pixel co-ordinates*/
+
   
- void plot_graph(int column_x, int column_y, RSIMType datatable, int xs, int ys, int xe, int ye, int color){
+void plot_graph(int column_x, int column_y, RSIMType datatable, int xs, int ys, int xe, int ye, int color){
      float xmax, ymax;     
      int row;
      int x1,x2,y1,y2;
-     /*printf("plot_graph start colX:%d\n",column_x);*/
-     xmax = max_function(datatable, column_x);
+     xmax = max_function(datatable, column_x);  /* Xmax and ymax will become the maximum values from the data table*/
      ymax = max_function(datatable, column_y);
      for (row=0;  row<MAXROW-1;  row=row+1){
-        /*x1 = (xborderless/MAXROW)*row;*/
-        x1 = scale(xs, xe, datatable, row, column_x, xmax);
-        y1 = scale(ys, ye, datatable, row, column_y, ymax);
+        x1 = scale(xs, xe, datatable, row, column_x, xmax);  /* All of the data values are converted into their pixel co-ordinates*/
+        y1 = scale(ys, ye, datatable, row, column_y, ymax);  /* so they are located on the correct graph in the window and in the right place.*/
         x2 = scale(xs, xe, datatable, row+1, column_x, xmax);
         y2 = scale(ys, ye, datatable, row+1, column_y, ymax);
-        /*scale(xborderless, xmax, datatable, row, column_x, x_origin);*/
-        GrLine(x1, y1, x2, y2, color);
+        GrLine(x1, y1, x2, y2, color);  /* Draws a line from the starting set of co-ordinates to the finishing.*/
      }             
 }
-      
+
+/* The Graph_plotter function completes a number of tasks including the graphics window, printing graphs and axes, and the ability to use*/
+/* the mouse and click on the window to find out values at certain points.*/      
       
 Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int variable_xa, int variable_xb, int variable_y1a, int variable_y2a, int variable_yb){
     int xres, yres, ob, ib, i, exit_cross_size, xa_max, y1a_max, y2a_max, xb_max, yb_max;
@@ -181,17 +185,17 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
     char temp[80];
     char displaytitle[34], acc_display[40], time_display[40], velocity_display[40], Mass_display[40], Altitude_display[40], Drag_display[40], Gravity_display[40], Density_display[40];
     GrMouseEvent evt;
-    GrSetMode(GR_width_height_graphics,GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN)); /* makes the graphics window full size*/
+    GrSetMode(GR_width_height_graphics,GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN)); /* Makes the graphics window the full sizeof the user's screen.*/
     GrClearScreen(15);    /* Makes the graphics window white*/
-    ob = 40;
-    ib = 10;   
+    ob = 40;              /* Outer border of pixels (used just around edge of graphics window).*/
+    ib = 10;              /* Inner border of pixels (used around the different graphs to segmen them).*/
     xres=GrScreenX();
     yres=GrScreenY();
     
     sprintf (displaytitle, "Atlas V 400 Rocket Simulation Data");
     sprintf (acc_display, "Acceleration (m/s^2)");
-    sprintf (velocity_display, "Velocity (m/s)");    /*Graph labels*/ 
-    sprintf (time_display, "time (s)");
+    sprintf (velocity_display, "Velocity (m/s)");    /* Graph labels, used both on the axes and in the parameter box that displays values.*/ 
+    sprintf (time_display, "Time (s)");
     sprintf (Mass_display, "Rocket Mass (kg)");
     sprintf (Altitude_display, "Altitude (m)");
     sprintf (Drag_display, "Drag (N)");
@@ -238,28 +242,28 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
 
         GrMouseGetEventT(GR_M_LEFT_DOWN,&evt,0L);
         
-        GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(ob), acc_display, 4, 8);            /*prints the paramenters from the graph in the 'parameter box' and displays the values of the point at which the user clicks*/
+        GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(ob), acc_display, 4, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(2*ob), velocity_display, 1, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(3*ob), time_display, 15, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(4*ob), Mass_display, 15, 8);
         GrTextXY(((2*(xres-ob))/3)+(ob/2)+ib,(yres/2)+(5*ob), Altitude_display, 15, 8);
         
         if(evt.buttons == 1 && evt.dtime > 0.01){                                   /*this displays the values of the graph where you click in the parameters box*/
-            if (evt.y > y2a && evt.y < y1a && evt.x < x2a && evt.x > x1a) {         /*the if statements determine whether the user is clicking on the graph or not*/
+            if (evt.y > y2a && evt.y < y1a && evt.x < x2a && evt.x > x1a) {
                       xa_max = max_function(datatable, variable_xa);
                       y1a_max = max_function(datatable, variable_y1a);
                       y2a_max = max_function(datatable, variable_y2a);
-                      sprintf (acc_display, "Acceleration (m/s^2) = %03.1d", reverse_scale( evt.y, y1a, y2a, y1a_max));       /*sprintf used to change the values printed in the parameter box in the graphics window*/
+                      sprintf (acc_display, "Acceleration (m/s^2) = %03.0d", reverse_scale( evt.y, y1a, y2a, y1a_max));
                       sprintf (velocity_display, "Velocity (m/s) = %04.0d", reverse_scale( evt.y, y1a, y2a, y2a_max));
-                      sprintf (time_display, "Time = %03.0d", reverse_scale( evt.x, x1a, x2a, xa_max));
+                      sprintf (time_display, "Time (s) = %03.0d", reverse_scale( evt.x, x1a, x2a, xa_max));
                       sprintf (Drag_display, "Drag (N)");
                       sprintf (Gravity_display, "Gravity (N)");
                       sprintf (Density_display, "Air Density (kg/M^3)");
             }
-            else {                                                                  /*else statements cause N/A to be printed in the parameter box if the user clicks outside the graphs*/
-                 sprintf (acc_display, "Acceleration (m/s^2) = N/A");        
+            else {
+                 sprintf (acc_display, "Acceleration (m/s^2) = N/A");
                  sprintf (velocity_display, "Velocity (m/s) =  N/A");
-                 sprintf (time_display, "Time = N/A");
+                 sprintf (time_display, "Time (s) = N/A");
                  sprintf (Drag_display, "Drag (N) = N/A");
                  sprintf (Gravity_display, "Gravity (N) = N/A");
                  sprintf (Density_display, "Air Density (kg/M^3) = N/A");
@@ -302,7 +306,7 @@ float calc_thrust(float *thrust, int *number_of_boosters, float gravity, float f
 }
 
 float calc_density(int *start_temp, float molar_mass) {
-      float pressure = pressure_at_sea_level * exp((-1 * molar_mass * gravity * altitude) / (gas_constant * *start_temp));
+      float pressure = pressure_at_sea_level * exp((-1 * molar_mass * gravity * altitude) / (gas_constant * /**start_temp*/280));
       density = (pressure * molar_mass)/(gas_constant * *start_temp);
       return density;
       }
@@ -340,7 +344,10 @@ float calc_mass(float fuel_rate_of_solid_rocket_boosters, float fuel_rate_of_atl
       return mass;
 }
 
-
+int DecideDragCofficient(float *drag_coefficient) {
+      printf ("What drag coefficient would you like to use:\n");
+      *drag_coefficient = ValidateData();
+}
 
 
 
@@ -351,7 +358,7 @@ RSIMType AddData(RSIMType datatable, int *number_of_boosters, int *payload, int 
      total_time = *detach_atlas_booster_time; 
      area_which_experiences_drag = (PI / 4) * pow(5.4, 2);
      molar_mass = 0.02897;
-     dt = 1;
+     dt = 1; /*let them choose this in proper one*/
      fuel_rate_of_solid_rocket_boosters = (1688400 * *thrust_percentage) / (9.81 * 279.3);
      fuel_rate_of_atlas_booster = (3827000 * *thrust_percentage) / (9.81 * 311.3);
      SRB_burn_time = 40939 / fuel_rate_of_solid_rocket_boosters;
@@ -367,6 +374,8 @@ RSIMType AddData(RSIMType datatable, int *number_of_boosters, int *payload, int 
            /* Function takes data input and stores it in the data structure, row by row.*/
      if (datatable.currentrow >= (MAXROW)) {
     	   printf("The array of data is full"); }
+     /*else if (time = total_time) {
+           printf("The array of data is full"); } /* Displayed if array is full.*/
      else {
            while (time < total_time) { 
                     datatable.table[datatable.currentrow][COLt] = timer(dt);  
@@ -414,9 +423,7 @@ float ChangeParameters(int *payload, int *number_of_boosters, int *inert_mass, i
     
 
 int MassOfPayload(int *payload, int i) {
-      printf ("\nPlease select the payload which you would like to use:\n\n");
-      printf("1. Short pay load\n2. Medium pay load\n3. Long pay load\n");
-      printf("Please select: ");
+      printf ("Would you like to have:\n1. Short pay load\n2. Medium pay load\n3. Long pay load\n");
       i = ValidateData();
       if (i == 1){ 
             *payload = 3524;}
@@ -430,16 +437,15 @@ int MassOfPayload(int *payload, int i) {
 int NumberOfBoosters(int *number_of_boosters) {
       *number_of_boosters = -1;
       while (*number_of_boosters < 0 || *number_of_boosters > 5) {
-                 printf ("\nPlease enter the number of Solid ROcket Boosters you would like to use (You can have 0-5): ");
+                 printf ("How many boosters would you like? (You can have 0-5): ");
                  *number_of_boosters = ValidateData();
       }
 }
 
+
 int CentaurEngineType(int *centaur_engine_type, int *inert_mass) {
       int i;
-      printf ("\nPlease select the type of common centaur engine you would like to use:\n\n");
-      printf("1. Single engine centaur\n2. Duel engine centaur\n");
-      printf("Please select: ");
+      printf ("What type of centaur engine would you like to use:\n1. Single engine centaur\n2. Duel engine centaur\n");
       i = ValidateData();
       if (i == 1) {
             *centaur_engine_type = 99200;
@@ -451,32 +457,28 @@ int CentaurEngineType(int *centaur_engine_type, int *inert_mass) {
       }
       
 int temperature(int *start_temp) {
-    printf ("\nPlease enter the temperature you would like to launch the rocket at (in Kelvin): ");
+    printf ("What temperature would you like to launch the rocket at (in Kelvin):\n");
     *start_temp = ValidateData();
     }
 
-int DecideDragCofficient(float *drag_coefficient) {
-      printf ("\nPlease enter the drag coefficient you would like to use: ");
-      *drag_coefficient = ValidateData();
-}
-
 int DecideThrustPercentage(float *thrust_percentage) {
-      printf ("\nPlease enter the percentage of the thrust you would like to use (a higher percentage will use the fuel up quicker): ");
+      printf ("What percentage of the thrust would you like to use (a higher percentage will use the fuel up quicker);\n");
       *thrust_percentage = ValidateData() / 100;
       printf ("the Solid Rocket Boosters with run out of fuel after %fseconds\nThe Atlas booster will run out of fuel after %fseconds", 40939 / (1688400 * *thrust_percentage) / (9.81 * 279.3), 284089 / ((3827000 * *thrust_percentage) / (9.81 * 311.3)));
       }
 
 int DetachSRBTime(int *detach_SRB_time) {
-    printf ("\nPlease enter the time after launch you would like the Solid Rocket Boosters to detach: ");
+    printf ("How long launch would you like the Solid ROcket Boosters to detach:\n");
     *detach_SRB_time = ValidateData();
 }
 
 int DetachABTime(int *detach_atlas_booster_time) {
-    printf ("\nPlease enter the time after launch you would like the the Atlas Booster to detach (This will be the time at the the simulation ends): ");
+    printf ("How long launch would you like the Atlas Booster to detach, and therefore the simulation to end:\n");
     *detach_atlas_booster_time = ValidateData();
 }
 
 int Export_to_excel(RSIMType datatable, int *detach_atlas_booster_time) {
+    
     char spreadsheet_location[1000], filename[50];
     int j;
     FILE *spreadsheet;
