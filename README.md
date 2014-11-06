@@ -41,7 +41,8 @@ char * displaytitle = "Atlas V 400 Rocket Simulation Data", * graph1yalabel = "A
 
 int Menu() {                                            /* Function that displays the list of options to the user.*/
     int option1;
-    printf("\n\nThis is a program to simulate a rocket launch, A set of default simulation data is ready to view.\n\n");
+    printf("\n\nThis is a program to simulate a rocket launch, A set of default simulation data is ready to view.\n");
+    printf("\nVarious graphs can be plotted, and point data can be found by clicking on the graphs.\n\n");
     printf("1.\tDisplay experimental and calculated data.\n");
     printf("2.\tChange parameters\n");
     printf("3.\tPlot graphs\n");
@@ -203,22 +204,22 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
     sprintf (Density_display, "Air Density (kg/M^3)");
     
     x1a = ob/2;
-    y1a = (yres/2)+(ob/2)-2*(ib);
-    x2a = xres-(ob/2);
+    y1a = (yres/2)+(ob/2)-2*(ib);    /* These are the co-ordinates for the space taken up by the graphs.  "a" is the top graph, "b" is the*/
+    x2a = xres-(ob/2);               /* bottom graph.  1 is the lower set and 2 is higher.  x and y are standard axes on a graph.*/
     y2a = (ob/2)+ib;
     
-    x1b = ob/2;
+    x1b = ob/2;                     /* The points mark out the rectangle in which all the graph plots will be contained.*/
     y1b = yres-(3*ib);
     x2b = (2*(xres-ob))/3;
     y2b = ((yres+20)/2 + 2*ib);
     
 
-    GrLine(x1a, y1a, x1a, y2a, 0);
+    GrLine(x1a, y1a, x1a, y2a, 0);   /* Both graph axes lines drawn in the window.*/
     GrLine(x1a, y1a, x2a, y1a, 0);
     GrLine(x2a, y1a, x2a, y2a, 0);
     GrLine(x1b, y1b, x1b, y2b, 0);
     GrLine(x1b, y1b, x2b, y1b, 0);
-    DrawText1(xres/2, 0, displaytitle, GR_ALIGN_CENTER, GR_ALIGN_TOP, GrBlack());    /*labels*/
+    DrawText1(xres/2, 0, displaytitle, GR_ALIGN_CENTER, GR_ALIGN_TOP, GrBlack());    /*  */
     DrawText2(ib, (yres/4)+((3/2)*ib), acc_display, GR_ALIGN_CENTER, GR_ALIGN_CENTER,GrBlack());
     DrawText2(xres - ib, (yres/4)+((3/2)*ib), velocity_display, GR_ALIGN_CENTER, GR_ALIGN_CENTER,GrBlack());
     DrawText1(xres/2, ((yres/2)+(ib)), time_display, GR_ALIGN_CENTER, GR_ALIGN_TOP, GrBlack());
@@ -288,10 +289,14 @@ Graph_plotter(int column_x, int column_y, RSIMType datatable,  int max, int vari
 } 
 
 
-float timer(float dt){
+float timer(float dt){  /* Function that increase the time by the defined dt, and stores it in the data table.*/
       time = (time + dt);
       return time;
 }  
+
+
+/* The function below calculates the thrust, which will change depending on when the rocket boosters are ejected.*/
+/* An assumption of a constant thrust percentage during the simulation has been made, which the user can change.*/
 
 float calc_thrust(float *thrust, int *number_of_boosters, float gravity, float fuel_rate_of_solid_rocket_boosters, float fuel_rate_of_atlas_booster, float dt, float *thrust_percentage, float SRB_burn_time, float atlas_booster_burn_time) {
       if (time <= SRB_burn_time) {
@@ -305,37 +310,59 @@ float calc_thrust(float *thrust, int *number_of_boosters, float gravity, float f
       }
 }
 
+
+/* The function below calculates the pressure at a certain altitude, based on the pressure at sea level and P(Rho) = mRT.*/
+/* The function then calculates the corresponding air density */
+
 float calc_density(int *start_temp, float molar_mass) {
-      float pressure = pressure_at_sea_level * exp((-1 * molar_mass * gravity * altitude) / (gas_constant * /**start_temp*/280));
+      float pressure = pressure_at_sea_level * exp((-1 * molar_mass * gravity * altitude) / (gas_constant * *start_temp));
       density = (pressure * molar_mass)/(gas_constant * *start_temp);
       return density;
       }
+
+
+/* The function below calculates drag, using the drag coeff, the air density, and also the area of the rocket experiencing drag.*/
 
 float calc_drag(float *drag_coefficient, float area_which_experiences_drag) {
       drag = *drag_coefficient * density * (pow(velocity, 2) / 2) * area_which_experiences_drag;
       return drag;
       }
 
+
+/* The function calculates acceleration using the formula F = ma.*/
+
 float calc_acceleration(float thrust) {
       acceleration = ((thrust - drag) / mass) - gravity;
       return acceleration;
       }                          
+
+
+/* Function calculates velocity by using the suvat equations.*/
            
 float calc_velocity(float dt) {
      velocity = velocity + (acceleration * dt);
      return velocity;
      }
 
+
+/* Function calculates altitude by using the suvat equations.*/
+
 float calc_altitude(float dt) {
       altitude = altitude + velocity * dt + ((acceleration * pow(dt, 2)) / 2);
       return altitude;
       }
+
+
+/* Function calculates the value of gravity using the equation g = GM/(R^2)*/
 
 float calc_gravity() {
       gravity = (gravitational_constant * mass_of_earth) / (pow(radius_of_earth + altitude, 2));
       return gravity;
       }
 
+
+/* Function below calculates the mass, which will change as the boosters are ejected, and as the fuel is burnt in the rocket.*/
+/* The booster ejection times were found on the computing specification that details the project.*/
 float calc_mass(float fuel_rate_of_solid_rocket_boosters, float fuel_rate_of_atlas_booster, float dt, int *number_of_boosters, int *detach_SRB_time, int *inert_mass) {
       if (time == *detach_SRB_time) { mass = mass - (*number_of_boosters * 5740); }
       if (time <= 94) {mass = mass - ((fuel_rate_of_solid_rocket_boosters * *number_of_boosters) + fuel_rate_of_atlas_booster) * dt;}
@@ -344,10 +371,6 @@ float calc_mass(float fuel_rate_of_solid_rocket_boosters, float fuel_rate_of_atl
       return mass;
 }
 
-int DecideDragCofficient(float *drag_coefficient) {
-      printf ("What drag coefficient would you like to use:\n");
-      *drag_coefficient = ValidateData();
-}
 
 
 
@@ -459,7 +482,12 @@ int CentaurEngineType(int *centaur_engine_type, int *inert_mass) {
 int temperature(int *start_temp) {
     printf ("What temperature would you like to launch the rocket at (in Kelvin):\n");
     *start_temp = ValidateData();
-    }
+    }    
+        
+int DecideDragCofficient(float *drag_coefficient) {
+      printf ("What drag coefficient would you like to use:\n");
+      *drag_coefficient = ValidateData();
+}
 
 int DecideThrustPercentage(float *thrust_percentage) {
       printf ("What percentage of the thrust would you like to use (a higher percentage will use the fuel up quicker);\n");
